@@ -2,10 +2,28 @@ import { CreateEventCategoryModal } from "@/components/create-event-category-mod
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { client } from "@/lib/client"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Plan } from "@prisma/client"
 
 export const DashboardEmptyState = () => {
   const queryClient = useQueryClient()
+
+  const { data: categories } = useQuery({
+    queryKey: ["user-event-categories"],
+    queryFn: async () => {
+      const res = await client.category.getEventCategories.$get()
+      const { categories } = await res.json()
+      return categories
+    },
+  })
+
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const res = await client.user.getCurrentUser.$get()
+      return res.json()
+    },
+  })
 
   const { mutate: insertQuickstartCategories, isPending } = useMutation({
     mutationFn: async () => {
@@ -45,7 +63,11 @@ export const DashboardEmptyState = () => {
           <span>{isPending ? "Creating..." : "Quickstart"}</span>
         </Button>
 
-        <CreateEventCategoryModal containerClassName="w-full sm:w-auto">
+        <CreateEventCategoryModal 
+          containerClassName="w-full sm:w-auto"
+          currentCategoryCount={categories?.length ?? 0}
+          userPlan={user?.plan ?? Plan.FREE}
+        >
           <Button className="flex items-center space-x-2 w-full sm:w-auto">
             <span>Add Category</span>
           </Button>

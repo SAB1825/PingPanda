@@ -1,4 +1,3 @@
-
 import { DashboardPage } from "@/components/dashboard-page";
 import { db } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
@@ -12,20 +11,36 @@ const Page = async () => {
 
     const auth = await currentUser();
     if(!auth) {
+        console.log("Redirected from auth")
+
         redirect("/sign-in");
     }
 
-    const user = await db.user.findUnique({
+    let user = await db.user.findUnique({
         where: {
             externalId: auth.id
         }
-    })
+    });
+
     if(!user) {
-        redirect("/sign-in");
+        console.log("Creating new user");
+        user = await db.user.create({
+            data: {
+                quotaLimit: 100,
+                email: auth.emailAddresses[0].emailAddress,
+                externalId: auth.id,
+            }
+        });
     }
+
+    // Get the categories count
+    const categories = await db.eventCategory.findMany({
+        where: { userId: user.id }
+    });
+
     return (
        <>
-        <DashboardPage cta={<CreateEventCategoryModal>
+        <DashboardPage cta={<CreateEventCategoryModal currentCategoryCount={categories.length} userPlan={user.plan}>
             <Button className="w-full sm:w-fit">
                 <PlusIcon className="size-4 mr-2" />
                 Add Category

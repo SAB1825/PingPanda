@@ -9,10 +9,14 @@ import { CATEGORY_NAME_VALIDATOR } from "@/lib/validators/category-validator"
 import { Modal } from "./ui/modal"
 import { Label } from "./ui/label"
 import { Input } from "./ui/input"
-
 import { Button } from "./ui/button"
 import { client } from "@/lib/client"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import { Plan } from "@prisma/client"
+import { FREE_QUOTA, PRO_QUOTA } from "@/config"
+import { LockIcon } from "lucide-react"
+import { DialogTitle } from "./ui/dialog"
 
 const EVENT_CATEGORY_VALIDATOR = z.object({
   name: CATEGORY_NAME_VALIDATOR,
@@ -53,14 +57,39 @@ const EMOJI_OPTIONS = [
 
 interface CreateEventCategoryModel extends PropsWithChildren {
   containerClassName?: string
+  currentCategoryCount: number
+  userPlan: Plan
 }
 
 export const CreateEventCategoryModal = ({
   children,
   containerClassName,
+  currentCategoryCount,
+  userPlan,
 }: CreateEventCategoryModel) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const queryClient = useQueryClient()
+  const router = useRouter()
+
+  const handleClick = () => {
+    console.log('Current count:', currentCategoryCount); // Debug log
+    console.log('User plan:', userPlan); // Debug log
+    
+    const categoryLimit = userPlan === Plan.PRO 
+      ? PRO_QUOTA.maxEventCategories 
+      : FREE_QUOTA.maxEventCategories;
+
+    console.log('Category limit:', categoryLimit); // Debug log
+
+    if (currentCategoryCount >= categoryLimit) {
+      console.log('Showing upgrade modal'); // Debug log
+      setShowUpgradeModal(true)
+    } else {
+      console.log('Showing create modal'); // Debug log
+      setIsOpen(true)
+    }
+  }
 
   const {
     register,
@@ -75,12 +104,23 @@ export const CreateEventCategoryModal = ({
 
  const {mutate : createEventCategory, isPending} = useMutation({
     mutationFn: async (data: EventCategoryForm) => {
-         await client.category.createCategory.$post(data);
+      const response = await client.category.createCategory.$post(data)
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error("error in ")
+      }
+      return response.json()
     },
     onSuccess: () => {
         queryClient.invalidateQueries({queryKey:["user-event-categories"]})
         setIsOpen(false)
         reset()
+    },
+    onError: (error) => {
+      if (error.message?.includes("Category limit reached")) {
+        setIsOpen(false)
+        router.push("/dashboard/upgrade?from=category_limit")
+      }
     }
  })
 
@@ -95,15 +135,50 @@ export const CreateEventCategoryModal = ({
 
   return (
     <>
-      <div className={containerClassName} onClick={() => setIsOpen(true)}>
+      <div className={containerClassName} onClick={handleClick}>
         {children}
       </div>
+
+      <Modal
+        showModal={showUpgradeModal}
+        setShowModal={setShowUpgradeModal}
+        className="max-w-xl p-8"
+      >
+        <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
+        <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="p-3 bg-brand-50 rounded-full">
+            <LockIcon className="w-6 h-6 text-brand-600" />
+          </div>
+          <h2 className="text-xl font-semibold">Category Limit Reached</h2>
+          <p className="text-gray-600">
+            You&apos;ve reached the maximum of {FREE_QUOTA.maxEventCategories} categories on the free plan. 
+            Upgrade to Pro to create up to {PRO_QUOTA.maxEventCategories} categories!
+          </p>
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowUpgradeModal(false)
+                router.push("/dashboard/upgrade?from=category_limit")
+              }}
+            >
+              Upgrade to Pro
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         className="max-w-xl p-8"
         showModal={isOpen}
         setShowModal={setIsOpen}
       >
+        <DialogTitle className="sr-only">Create New Category</DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <h2 className="text-lg/7 font-medium tracking-tight text-gray-950">

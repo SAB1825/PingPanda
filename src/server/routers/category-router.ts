@@ -8,6 +8,9 @@ import { create } from "domain";
 import { CATEGORY_NAME_VALIDATOR } from "@/lib/validators/category-validator";
 import { parseColor } from "@/lib/utils";
 import { HTTPException } from "hono/http-exception";
+import { Plan } from "@prisma/client";
+import { FREE_QUOTA, PRO_QUOTA } from "@/config";
+
 export const CategoryRouter = router({
     getEventCategories: privateProcedure.query(async ({ c, ctx}) => {
         const categories = await db.eventCategory.findMany({
@@ -93,6 +96,24 @@ export const CategoryRouter = router({
         ).mutation(async ({input, c, ctx}) => {
             const {user} = ctx;
             const {name, color, emoji} = input;
+
+            // Get current category count
+            const categoryCount = await db.eventCategory.count({
+                where: { userId: user.id }
+            });
+
+            // Check if user has reached their limit
+            const categoryLimit = user.plan === Plan.PRO 
+                ? PRO_QUOTA.maxEventCategories 
+                : FREE_QUOTA.maxEventCategories;
+
+            if (categoryCount >= categoryLimit) {
+                throw new HTTPException(403, { 
+                    message: "Category limit reached. Please upgrade to Pro for more categories.",
+                    cause: { code: "CATEGORY_LIMIT_REACHED" }
+                });
+            }
+
             const eventCategory = await db.eventCategory.create({
                 data: {
                     name: name.toLowerCase(),
@@ -100,8 +121,9 @@ export const CategoryRouter = router({
                     emoji,
                     userId: user.id
                 }
-            })
-            return c.json({eventCategory})
+            });
+            
+            return c.json({eventCategory});
         }),
         insertQuickstartCategories: privateProcedure.mutation(async ({ ctx, c }) => {
             const categories = await db.eventCategory.createMany({

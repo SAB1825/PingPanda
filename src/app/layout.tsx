@@ -16,7 +16,7 @@ const eb_garamond = EB_Garamond({
 export const metadata: Metadata = {
   title: "Ping Panda",
   description: "Notify real time SaaS Insights!",
-  icons: [{ rel: "icon", url: "/bendo-asset-profile-picture.png" }],
+  icons: [{ rel: "icon", url: "/brand-asset-profile-picture.png" }],
 }
 
 export default function RootLayout({

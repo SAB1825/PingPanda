@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "deploy": "wrangler deploy",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "pages:build": ""
   },
   "dependencies": {
     "@clerk/elements": "^0.22.1",
@@ -46,6 +47,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.7",
     "@cloudflare/workers-types": "^4.20240815.0",
     "@types/node": "^20",
     "@types/react": "^18",

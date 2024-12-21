@@ -3,7 +3,7 @@ import { db } from "@/db"
 import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { UpgradePageContent } from "./upgrade-page-content"
-
+export const runtime = 'edge';
 const Page = async () => {
   const auth = await currentUser()
 

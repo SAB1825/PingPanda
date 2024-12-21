@@ -6,8 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LucideProps } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-
-//sync auth with DB
+export const runtime = 'edge';
 const Page = () => {
     const router = useRouter()
     const {data} = useQuery({

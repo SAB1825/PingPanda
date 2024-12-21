@@ -4,7 +4,7 @@ import * as Clerk from '@clerk/elements/common'
 import * as SignUp from '@clerk/elements/sign-up'
 import Image from 'next/image'
 import Link from 'next/link'
-
+export const runtime = 'edge';
 export default function SignUpPage() {
   return (
     <div className="grid w-full flex-grow items-center bg-white px-4 sm:justify-center">

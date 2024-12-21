@@ -9,7 +9,7 @@ interface PageProps {
     name: string | string[] | undefined
   }
 }
-
+export const runtime = 'edge';
 const Page = async ({ params }: PageProps) => {
   if (typeof params.name !== "string") return notFound()
 

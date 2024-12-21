@@ -9,7 +9,7 @@
     "lint": "next lint",
     "deploy": "wrangler deploy",
     "postinstall": "prisma generate",
-    "pages:build": ""
+    "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
     "@clerk/elements": "^0.22.1",

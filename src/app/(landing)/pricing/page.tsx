@@ -9,7 +9,7 @@ import { useMutation } from "@tanstack/react-query"
 import { CheckIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { FREE_QUOTA, PRO_QUOTA } from "@/config"
-
+export const runtime = 'edge';
 const Page = () => {
   const { user } = useUser()
   const router = useRouter()

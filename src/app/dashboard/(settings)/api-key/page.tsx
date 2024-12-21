@@ -3,7 +3,7 @@ import { db } from "@/db"
 import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { ApiKeySettings } from "./api-key-settings"
-
+export const runtime = 'edge';
 const Page = async () => {
   const auth = await currentUser()
 

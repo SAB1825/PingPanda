@@ -8,6 +8,7 @@ import { DiscordMessage } from "@/components/discord-message"
 import { AnimatedList } from "@/components/ui/animated-list"
 import Image from "next/image"
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"
+export const runtime = 'edge';
 const Page = () => {
   const codeSnippet = `await fetch("http://localhost:3000/api/v1/events", {
     method: "POST",

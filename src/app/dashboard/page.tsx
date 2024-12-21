@@ -6,7 +6,7 @@ import { DashboardPageContent } from "./dashboard-content";
 import { CreateEventCategoryModal } from "@/components/create-event-category-modal";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-
+export const runtime = 'edge';
 const Page = async () => {
 
     const auth = await currentUser();

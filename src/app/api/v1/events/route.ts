@@ -4,7 +4,7 @@ import { DiscordClient } from "@/lib/discord-client"
 import { CATEGORY_NAME_VALIDATOR } from "@/lib/validators/category-validator"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
-
+export const runtime = 'edge';
 const REQUEST_VALIDATOR = z
   .object({
     category: CATEGORY_NAME_VALIDATOR,
